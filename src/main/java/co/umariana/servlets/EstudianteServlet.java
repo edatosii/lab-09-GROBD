@@ -63,8 +63,12 @@ public class EstudianteServlet extends HttpServlet {
         if (nombre == null || nombre.trim().isEmpty()) {
             return "El nombre es obligatorio";
         }
-        if (correo == null || !correo.trim().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        String correoLimpio = correo == null ? null : correo.trim();
+        if (correoLimpio == null || !correoLimpio.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
             return "El correo no es válido";
+        }
+        if (correoLimpio.length() > 100) {
+            return "El correo no puede exceder 100 caracteres";
         }
         try {
             int s = Integer.parseInt(semestre.trim());
@@ -89,6 +93,12 @@ public class EstudianteServlet extends HttpServlet {
         // YA RESUELTO: "nuevo" muestra el formulario vacío.
         if ("nuevo".equals(accion)) {
             request.getRequestDispatcher(VISTA_FORMULARIO).forward(request, response);
+            return;
+        }
+
+        if (accion == null || "listar".equals(accion)) {
+            request.setAttribute("estudiantes", dao.listar());
+            request.getRequestDispatcher(VISTA_LISTAR).forward(request, response);
             return;
         }
 
@@ -126,7 +136,7 @@ public class EstudianteServlet extends HttpServlet {
                     response.sendRedirect("estudiantes");
                     return;
                 }
-                error = "No se pudo guardar el estudiante. Verifique que el correo no esté repetido.";
+                error = "No se pudo guardar el estudiante. Verifique los datos e inténtelo de nuevo.";
             }
             request.setAttribute("error", error);
             request.getRequestDispatcher(VISTA_FORMULARIO).forward(request, response);
